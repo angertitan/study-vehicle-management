@@ -1,4 +1,5 @@
-% init
+%% Globals
+
 kn2mjs=1852/3600; % Umrechnung knoten m/s
 Kp = 1; % Verstärkung
 T_torpedo = 30; % Zeitkonstante Torpedo
@@ -27,6 +28,25 @@ phi_soll = sim_vec;
 phi_zerstoerer = sim_vec;
 
 k = 1;
+
+T_NOMOTO = 4;
+
+%% Regler
+
+K_p = 1.0; % Verstärkung
+T_D = T_NOMOTO; % sec
+T_DV = 0.01; % sec
+T_N = 200; % sec
+
+
+G_REGLER1 = tf(K_p, 1) + tf(K_p*[T_D 0], [T_DV 1]) + tf(K_p,[T_N 0]);
+
+G_REGLER2 = tf(K_p * [T_N*(T_D + T_DV) (T_N + T_DV) 1], [T_N * T_DV T_N 0]);
+
+
+disp(G_REGLER1)
+disp(G_REGLER2)
+%% Calculation
 
 while( (sqrt((x_zerstoerer(k) - x_torpedo(k))^2 + (y_torpedo(k) - y_zerstoerer(k))^2)>=5) && ((k*dt)<t_max))
     
