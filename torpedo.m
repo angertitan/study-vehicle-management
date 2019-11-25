@@ -12,6 +12,16 @@ time_vec = sim_vec; % Zeitvektor
 v_torpedo = 50*kn2mjs; % Geschw. Torpedo in Knoten --> m/s
 v_zerstoerer = 30*kn2mjs; % Geschw. Schiff in Knoten --> m/s
 
+%% Vectors
+
+x1 = sim_vec;
+x2 = sim_vec;
+x3 = sim_vec;
+x4 = sim_vec;
+x5 = sim_vec;
+x6 = sim_vec;
+
+
 x_torpedo = sim_vec; % X-Richtung Torpedo 
 y_torpedo = sim_vec; % Y-Richtung Torpedo
 y_torpedo(1) = 4000; % Startentfernung Torpedo -> Zerst�rer
@@ -23,9 +33,9 @@ y_zerstoerer = sim_vec; % y-Richtung Zerst�rer
 vx_zerstoerer = sim_vec; % Geschwindigkeit X-Richtung Zerst�rer
 vy_zerstoerer = sim_vec; % Geschwindigkeit Y-Richtung Zerst�rer
 
-phi_ist = sim_vec;
-phi_soll = sim_vec;
-phi_zerstoerer = sim_vec;
+phi_ist = sim_vec; % Winkel Torpedo ist
+phi_soll = sim_vec; % Winkel Torpedo soll
+phi_zerstoerer = sim_vec; % Winkel Zerstörer
 
 k = 1;
 
@@ -47,14 +57,14 @@ T_D = T_Nomoto;
 T_V = 0.1;
 
 % Erstellen der Vektoren für tf
-G_PID_N = [T_J*(T_V+T_D) T_V+T_J 1 ];
-G_PID_D = [T_V*T_J T_J 0];
+G_PID_N = [T_J * (T_V + T_D) T_V + T_J 1 ];
+G_PID_D = [T_V * T_J T_J 0];
 G_RM_N = K_RM;
 G_RM_D = [T_RM 1];
 G_PHI_N = K_IS;
 G_PHI_D = [T_Nomoto 1 0];
 G_MES_N = K_Mess;
-G_MES_D = [T_Mess 1];
+G_MES_D = [T_Mess` 1];
 % Übertragungsfunktion der einzelnen Glieder über tf()
 G_PID = tf(G_PID_N,G_PID_D);
 G_RM = tf(G_RM_N,G_RM_D);
@@ -69,7 +79,7 @@ sisotool(G_RM*G_PHI,G_PID,G_MESS);
 
 %% Calculation
 
-while( (sqrt((x_zerstoerer(k) - x_torpedo(k))^2 + (y_torpedo(k) - y_zerstoerer(k))^2)>=5) && ((k*dt)<t_max))
+while( (sqrt((x_zerstoerer(k) - x_torpedo(k))^2 + (y_torpedo(k) - y_zerstoerer(k))^2)>=5) && ((k * dt)<t_max))
     
     % Berechnung Winkel
     phi_soll(k) = atan2((x_zerstoerer(k) - x_torpedo(k)), (y_torpedo(k) - y_zerstoerer(k)));
