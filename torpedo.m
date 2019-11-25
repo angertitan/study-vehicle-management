@@ -29,23 +29,44 @@ phi_zerstoerer = sim_vec;
 
 k = 1;
 
-T_NOMOTO = 4;
-
 %% Regler
 
-K_p = 1.0; % Verstärkung
-T_D = T_NOMOTO; % sec
-T_DV = 0.01; % sec
-T_N = 200; % sec
+% Rudermaschine
+K_RM = 1;
+T_RM = 0.2;
+% Rudermaschine
+K_IS = 1;
+T_Nomoto = 4;
+% Messgeber
+K_Mess = 1;
+T_Mess = 0.5;
+% Regler
+T_J = 200;
+K_Reg = 1; 
+T_D = T_Nomoto;
+T_V = 0.1;
 
+% Erstellen der Vektoren für tf
+G_PID_N = [T_J*(T_V+T_D) T_V+T_J 1 ];
+G_PID_D = [T_V*T_J T_J 0];
+G_RM_N = K_RM;
+G_RM_D = [T_RM 1];
+G_PHI_N = K_IS;
+G_PHI_D = [T_Nomoto 1 0];
+G_MES_N = K_Mess;
+G_MES_D = [T_Mess 1];
+% Übertragungsfunktion der einzelnen Glieder über tf()
+G_PID = tf(G_PID_N,G_PID_D);
+G_RM = tf(G_RM_N,G_RM_D);
+G_PHI = tf(G_PHI_N,G_PHI_D);
+G_MESS = tf(G_MES_N,G_MES_D);
 
-G_REGLER1 = tf(K_p, 1) + tf(K_p*[T_D 0], [T_DV 1]) + tf(K_p,[T_N 0]);
+sisot_C = G_PID; % Regler
+sisot_G = G_RM*G_PHI; % Strecke
+sisot_H = G_MESS; % Messgeber
 
-G_REGLER2 = tf(K_p * [T_N*(T_D + T_DV) (T_N + T_DV) 1], [T_N * T_DV T_N 0]);
+sisotool(G_RM*G_PHI,G_PID,G_MESS);
 
-
-disp(G_REGLER1)
-disp(G_REGLER2)
 %% Calculation
 
 while( (sqrt((x_zerstoerer(k) - x_torpedo(k))^2 + (y_torpedo(k) - y_zerstoerer(k))^2)>=5) && ((k*dt)<t_max))
