@@ -1,94 +1,104 @@
-%% Globals
+%% --- Globale Parameter --- %%
+% -- Umrechnungen -- %
+kn2mjs = 1852/3600; % [-] Umrechnungsfaktor Knoten -> m/s
 
-kn2mjs=1852/3600; % Umrechnung knoten m/s
-Kp = 1; % Verstärkung
-T_torpedo = 10; % Zeitkonstante Torpedo
-t_max = 500; % max. Laufzeit Torpedo in Sekunden
-dt = 0.001; % Abtastzeit
-phi_zz = 30 * (pi/180);
-sim_length = t_max/dt; % Simulationslenge
-sim_vec = zeros(1,sim_length); % Simulations Basisvektor
-time_vec = sim_vec; % Zeitvektor
+% -- Simulations Parameter -- %
+dt = 0.001; % [s] Abstastrate
+t_max = 500; % [s] maximale Laufzeit Torpedo
+sim_length = t_max/dt; % [-] maximale Simulationslänge
+k = 1; % [-] Simulationsindex
+time = 0; % [s] 
 
-v_torpedo = 50*kn2mjs; % Geschw. Torpedo in Knoten --> m/s
-v_zerstoerer = 30*kn2mjs; % Geschw. Schiff in Knoten --> m/s
+% -- Torpedo Parameter -- %
+K_p = 1; % [-] Verstärkung
+T_t = 10; % [s] Zeitkonstante Torpedo
+v_t = 50 * kn2mjs; % [m/s] Geschwindigkeit Torpedo (Knoten -> m/s)
+y_t__start = 4000; % [m] Startentfernung Torpedo <-> Zerstörer
 
-%% Vectors
+% -- Zerstörer Parameter -- %
+v_z = 30 * kn2mjs; % [m/s] Geschwindigkeit Zerstörer (Knoten -> m/s)
+phi_z_zz = deg2rad(20); % [rad] Zick Zack Winkel der Zerstörers
 
-x1 = sim_vec;
-x2 = sim_vec;
-x3 = sim_vec;
-x4 = sim_vec;
-x5 = sim_vec;
-x6 = sim_vec;
+%% --- Vektoren --- %%
+% -- Simulations Vektoren -- %
+base_vec = zeros(1, sim_length); % Basisvektor
+time_vec = zeros(1, sim_length); % [s] Zeitvektor
 
-x_torpedo = sim_vec; % X-Richtung Torpedo 
-y_torpedo = sim_vec; % Y-Richtung Torpedo
-y_torpedo(1) = 4000; % Startentfernung Torpedo -> Zerst�rer
-vx_torpedo = sim_vec; % Geschwindigkeit X-Richtung Torpedo
-vy_torpedo = sim_vec; % Geschwindigkeit Y-Richtung Torpedo
+% --Torpedo Vektoren -- %
+x1 = base_vec;
+x2 = base_vec;
+x3 = base_vec;
+x4 = base_vec;
+x5 = base_vec;
+x6 = base_vec;
 
-x_zerstoerer = sim_vec; % X-Richtung Zerst�rer
-y_zerstoerer = sim_vec; % y-Richtung Zerst�rer
-vx_zerstoerer = sim_vec; % Geschwindigkeit X-Richtung Zerst�rer
-vy_zerstoerer = sim_vec; % Geschwindigkeit Y-Richtung Zerst�rer
+x_t = base_vec; % [m] X-Richtungsvektor Torpedo
+y_t = base_vec; % [m] Y-Richtungsvektor Torpedo
+y_t(1) = y_t__start; % [m] Startentfernung setzen
 
-phi_ist = sim_vec; % Winkel Torpedo ist
-phi_soll = sim_vec; % Winkel Torpedo soll
-phi_zerstoerer = sim_vec; % Winkel Zerstörer
+phi_soll = base_vec; % [rad] Sollwinkel Torpedo
+phi_ist = base_vec; % [rad] Istwinkel Torpedo
 
-k = 1;
+% -- Zerstörer Vektoren -- %
+x_z = base_vec; % [m] X-Richtungsvektor Zerstörer
+y_z = base_vec; % [m] Y-Richtungsvektor Zerstörer
 
-%% Regler
+phi_z = base_vec; % [rad] Winkel Zerstörer
 
+%% --- Modellbildung --- %%
+% -- Modell Parameter -- %
 % Rudermaschine
-K_RM = 1;
-T_RM = 0.2;
-% Rudermaschine
-K_IS = 1;
-T_Nomoto = 4;
+K_RM = 1; % [-] Verstärkung Rudermaschine 
+T_RM = 0.2; % [s] Zeitkonstante Rudermaschine
+
+% Kursverhalten
+K_IS = 1; % [-] Verstärkung Kursverhalten 
+T_Nomoto = 4; % [s] Zeitkonstante Kursverhalten
+
 % Messgeber
-K_Mess = 1;
-T_Mess = 0.5;
-% Regler
-T_J = 200;
-K_Reg = 1; 
-T_D = T_Nomoto;
-T_V = 0.1;
+K_MESS = 1; % [-] Verstärkung Messgeber 
+T_MESS = 0.5; % [s] Zeitkonstante Messgeber
 
-% Regler Nominator (N) und Denuminator (D)
-G_PID_N = [T_J * (T_V + T_D) T_V + T_J 1 ];
-G_PID_D = [T_V * T_J T_J 0];
+% Kursregler (PID)
+T_J = 200; % [s] Zeitkonstante I-System Regler 
+K_R = 1; % [-] Verstärkung Regler 
+T_D = T_Nomoto; % [s] Zeitkonstante 1 PD-System Regler 
+T_DV = 0.1;  % [s] Zeitkonstante 2 PD-System Regler 
 
-G_RM_N = K_RM;
-G_RM_D = [T_RM 1];
+% -- Modell Erstellung -- %
+% Rudermaschine
+G_RM_N = [K_RM]; % Nominator
+G_RM_D = [T_RM 1]; % Denuminator
+G_RM = tf(G_RM_N, G_RM_D); % übertragungsfunktion
 
-G_PHI_N = K_IS;
-G_PHI_D = [T_Nomoto 1 0];
+% Kursverhalten
+G_PHI_N = [K_IS]; % Nominator
+G_PHI_D = [T_Nomoto 1 0]; % Denuminator
+G_PHI = tf(G_PHI_N, G_PHI_D); % übertragungsfunktion
 
-G_MESS_N = K_Mess;
-G_MESS_D = [T_Mess 1];
+% Messgeber
+G_MESS_N = [K_MESS]; % Nominator
+G_MESS_D = [T_MESS 1]; % Denumintor
+G_MESS = tf(G_MESS_N, G_MESS_D); % übertragungsfunktion
 
-% Übertragungsfunktion der einzelnen Glieder über tf()
+% Kursregler
+G_PID_N = K_R * [(T_J * (T_DV + T_D)) (T_DV + T_J) 1];
+G_PID_D = [(T_DV * T_J) T_J 0];
 G_PID = tf(G_PID_N, G_PID_D);
-G_RM = tf(G_RM_N, G_RM_D);
-G_PHI = tf(G_PHI_N, G_PHI_D);
-G_MESS = tf(G_MESS_N, G_MESS_D);
-G_phi_is = feedback(series(G_REGLER1, series(G_RM, G_PHI)),G_MESS);
-%sisotool(G_RM * G_PHI,G_PID,G_MESS);
 
-%% Zustandsraum
+% Gesamtsystem
+CLOOP_T = feedback(series(G_PID, series(G_RM, G_PHI)), G_MESS);
 
-[G_phi_is__n, G_phi_is__d] = tfdata(G_phi_is);
+%% --- Zustandsraum --- %%
+[CLOOP_T__N, CLOOP_T__D] = tfdata(CLOOP_T);
+[SS_A_CNT, SS_B_CNT, SS_C_CNT, SS_D_CNT] = tf2ss(cell2mat(CLOOP_T__N), cell2mat(CLOOP_T__D));
 
-[SS_A_CNT, SS_B_CNT, SS_C_CNT, SS_D_CNT] = tf2ss(cell2mat(G_phi_is__n), cell2mat(G_phi_is__d));
+%% --- Berechnung --- %%
 
-%% Calculation
-
-while( (sqrt((x_zerstoerer(k) - x_torpedo(k))^2 + (y_torpedo(k) - y_zerstoerer(k))^2)>=5) && ((k * dt)<t_max))
+while( (sqrt((x_z(k) - x_t(k))^2 + (y_t(k) - y_z(k))^2)>=5) && ((k * dt)<t_max))
     
     % Berechnung Winkel
-    phi_soll(k) = atan2((x_zerstoerer(k) - x_torpedo(k)), (y_torpedo(k) - y_zerstoerer(k)));
+    phi_soll(k) = atan2((x_z(k) - x_t(k)), (y_t(k) - y_z(k)));
 
     x1(k + 1) = x1(k) + dt * (SS_A_CNT(1,1) * x1(k)+(SS_A_CNT(1,2)) * x2(k) + (SS_A_CNT(1,3)) * x3(k) + (SS_A_CNT(1,4)) * x4(k)+(SS_A_CNT(1,5)) * x5(k) + (SS_A_CNT(1,6)) * x6(k) + SS_B_CNT(1) * phi_soll(k));
     x2(k + 1) = x2(k) + dt * (SS_A_CNT(2,1) * x1(k)+(SS_A_CNT(2,2)) * x2(k) + (SS_A_CNT(2,3)) * x3(k) + (SS_A_CNT(2,4)) * x4(k)+(SS_A_CNT(2,5)) * x5(k) + (SS_A_CNT(2,6)) * x6(k) + SS_B_CNT(2) * phi_soll(k));
@@ -98,35 +108,33 @@ while( (sqrt((x_zerstoerer(k) - x_torpedo(k))^2 + (y_torpedo(k) - y_zerstoerer(k
     x6(k + 1) = x6(k) + dt * (SS_A_CNT(6,1) * x1(k)+(SS_A_CNT(6,2)) * x2(k) + (SS_A_CNT(6,3)) * x3(k) + (SS_A_CNT(6,4)) * x4(k)+(SS_A_CNT(6,5)) * x5(k) + (SS_A_CNT(6,6)) * x6(k) + SS_B_CNT(6) * phi_soll(k));
     phi_ist(k) = SS_C_CNT(1) * x1(k) + SS_C_CNT(2) * x2(k) + SS_C_CNT(3) * x3(k) + SS_C_CNT(4) * x4(k) + SS_C_CNT(5) * x5(k) + SS_C_CNT(6) * x6(k);
 
-    phi_ist(k + 1) = phi_ist(k) + dt * ( -(1/T_torpedo) * phi_ist(k) + (Kp/T_torpedo) * phi_soll(k));
-    
-    % Berechnung Geschwindigkeit
-    vx_torpedo(k) = v_torpedo * sin(phi_ist(k)) * dt;
-    vy_torpedo(k) = -v_torpedo * cos(phi_ist(k)) * dt;
-    vx_zerstoerer(k) = v_zerstoerer * dt * cos(phi_zerstoerer(k));
-    vy_zerstoerer(k) = -v_zerstoerer * dt * sin(phi_zerstoerer(k));
+    phi_ist(k + 1) = phi_ist(k) + dt * ( -(1/T_t) * phi_ist(k) + (K_p/T_t) * phi_soll(k));
     
     % Berechnung Position
-    x_torpedo(k + 1) = x_torpedo(k) + vx_torpedo(k);
-    y_torpedo(k + 1) = y_torpedo(k) + vy_torpedo(k);
-    x_zerstoerer(k + 1) = x_zerstoerer(k) + vx_zerstoerer(k);
-    y_zerstoerer(k + 1) = y_zerstoerer(k) + vy_zerstoerer(k);
-     
- 
-    if(sqrt((y_zerstoerer(k) - y_torpedo(k))^2 + (x_zerstoerer(k) - x_torpedo(k))^2)<=2000)
-      x_zerstoerer(k + 1) = x_zerstoerer(k) + dt * cos(phi_zerstoerer(k) + phi_zz) * v_zerstoerer;
-      y_zerstoerer(k + 1) = -y_zerstoerer(k) + dt * sin(phi_zerstoerer(k) + phi_zz) * v_zerstoerer;
+    x_t(k + 1) = x_t(k) + v_t * sin(phi_ist(k)) * dt;
+    y_t(k + 1) = y_t(k) + v_t * -cos(phi_ist(k)) * dt;
+    
 
-      if mod(time_vec, 30)==0
-        phi_zz = -phi_zz;
-      end
+    x_z(k + 1) = x_z(k) + v_z * cos(phi_z(k)) * dt;
+    y_z(k + 1) = y_z(k) + v_z * -sin(phi_z(k)) * dt;
+   
+    if(sqrt((y_z(k) - y_t(k))^2 + (x_z(k) - x_t(k))^2)<=2000)
+        x_z(k + 1) = x_z(k) + v_z * cos(phi_z(k) + phi_z_zz) * dt;
+        y_z(k + 1) = y_z(k) + v_z * -sin(phi_z(k) + phi_z_zz) * dt;
+       
+        if mod(time,60)==0
+            phi_z_zz = -phi_z_zz;
+        end
+      
     end
     
+    time = (k - 1) * dt;
     time_vec(k) = (k - 1) * dt;
     k = k + 1;
 end
 
-plot (x_torpedo(1:k),y_torpedo(1:k),'r')
+figure()
+plot (x_t(1:k),y_t(1:k),'r')
 hold on
-plot (x_zerstoerer(1:k),y_zerstoerer(1:k),'b')
-grid on
+plot (x_z(1:k),y_z(1:k),'b')
+legend('Laufbahn Torpedo','Laufbahn Zerstörer')
