@@ -7,7 +7,7 @@ dt = 0.001; % [s] Abstastrate
 t_max = 500; % [s] maximale Laufzeit Torpedo
 sim_length = t_max/dt; % [-] maximale Simulationslänge
 k = 1; % [-] Simulationsindex
-time = 0; % [s] 
+timestamp = 0; % [s] 
 
 % -- Torpedo Parameter -- %
 K_p = 1; % [-] Verstärkung
@@ -25,12 +25,12 @@ base_vec = zeros(1, sim_length); % Basisvektor
 time_vec = zeros(1, sim_length); % [s] Zeitvektor
 
 % --Torpedo Vektoren -- %
-x1 = base_vec;
-x2 = base_vec;
-x3 = base_vec;
-x4 = base_vec;
-x5 = base_vec;
-x6 = base_vec;
+x1 = base_vec; % Zustandsvektoren
+x2 = base_vec; % Zustandsvektoren
+x3 = base_vec; % Zustandsvektoren
+x4 = base_vec; % Zustandsvektoren
+x5 = base_vec; % Zustandsvektoren
+x6 = base_vec; % Zustandsvektoren
 
 x_t = base_vec; % [m] X-Richtungsvektor Torpedo
 y_t = base_vec; % [m] Y-Richtungsvektor Torpedo
@@ -102,7 +102,7 @@ step(CLOOP_T, 40)
 SS_A_OBS = SS_A_CNT';
 SS_B_OBS = SS_C_CNT';
 SS_C_OBS = SS_B_CNT';
-SS_D_OBS = SS_D_CNT';
+SS_D_OBS = SS_D_CNT;
 
 SS_A = SS_A_CNT;
 SS_B = SS_B_CNT;
@@ -114,15 +114,18 @@ SS_D = SS_D_CNT;
 
 while( (sqrt((x_z(k) - x_t(k))^2 + (y_t(k) - y_z(k))^2)>=5) && ((k * dt)<t_max))
     
-    % Berechnung Winkel
+    % Berechnung Sollwinkel
     phi_soll(k) = atan2((x_z(k) - x_t(k)), (y_t(k) - y_z(k)));
 
+    % Berechnung Zustände
     x1(k + 1) = x1(k) + dt * (SS_A(1,1) * x1(k)+(SS_A(1,2)) * x2(k) + (SS_A(1,3)) * x3(k) + (SS_A(1,4)) * x4(k)+(SS_A(1,5)) * x5(k) + (SS_A(1,6)) * x6(k) + SS_B(1) * phi_soll(k));
     x2(k + 1) = x2(k) + dt * (SS_A(2,1) * x1(k)+(SS_A(2,2)) * x2(k) + (SS_A(2,3)) * x3(k) + (SS_A(2,4)) * x4(k)+(SS_A(2,5)) * x5(k) + (SS_A(2,6)) * x6(k) + SS_B(2) * phi_soll(k));
     x3(k + 1) = x3(k) + dt * (SS_A(3,1) * x1(k)+(SS_A(3,2)) * x2(k) + (SS_A(3,3)) * x3(k) + (SS_A(3,4)) * x4(k)+(SS_A(3,5)) * x5(k) + (SS_A(3,6)) * x6(k) + SS_B(3) * phi_soll(k));
     x4(k + 1) = x4(k) + dt * (SS_A(4,1) * x1(k)+(SS_A(4,2)) * x2(k) + (SS_A(4,3)) * x3(k) + (SS_A(4,4)) * x4(k)+(SS_A(4,5)) * x5(k) + (SS_A(4,6)) * x6(k) + SS_B(4) * phi_soll(k));
     x5(k + 1) = x5(k) + dt * (SS_A(5,1) * x1(k)+(SS_A(5,2)) * x2(k) + (SS_A(5,3)) * x3(k) + (SS_A(5,4)) * x4(k)+(SS_A(5,5)) * x5(k) + (SS_A(5,6)) * x6(k) + SS_B(5) * phi_soll(k));
     x6(k + 1) = x6(k) + dt * (SS_A(6,1) * x1(k)+(SS_A(6,2)) * x2(k) + (SS_A(6,3)) * x3(k) + (SS_A(6,4)) * x4(k)+(SS_A(6,5)) * x5(k) + (SS_A(6,6)) * x6(k) + SS_B(6) * phi_soll(k));
+    
+    % Berechnung Istwinkel
     phi_ist(k) = SS_C(1) * x1(k) + SS_C(2) * x2(k) + SS_C(3) * x3(k) + SS_C(4) * x4(k) + SS_C(5) * x5(k) + SS_C(6) * x6(k);
 
     phi_ist(k + 1) = phi_ist(k) + dt * ( -(1/T_t) * phi_ist(k) + (K_p/T_t) * phi_soll(k));
@@ -131,12 +134,12 @@ while( (sqrt((x_z(k) - x_t(k))^2 + (y_t(k) - y_z(k))^2)>=5) && ((k * dt)<t_max))
     x_t(k + 1) = x_t(k) + v_t * sin(phi_ist(k)) * dt;
     y_t(k + 1) = y_t(k) + v_t * -cos(phi_ist(k)) * dt;
     
-
+    % Zick Zack Kurs Zerstörer -> wenn Torpedo näher als 2000m
     if(sqrt((y_z(k) - y_t(k))^2 + (x_z(k) - x_t(k))^2)<=2000)
         
         phi_z(k) = phi_z(k) + phi_z_zz;
 
-        if mod(time,15)==0
+        if mod(timestamp,15)==0
             phi_z_zz = -phi_z_zz;
         end
       
@@ -147,12 +150,15 @@ while( (sqrt((x_z(k) - x_t(k))^2 + (y_t(k) - y_z(k))^2)>=5) && ((k * dt)<t_max))
     y_z(k + 1) = y_z(k) + v_z * -sin(phi_z(k)) * dt;
    
 
+    % Zeitstempel speichern
+    timestamp = (k - 1) * dt;
+    time_vec(k) = timestamp;
     
-    time = (k - 1) * dt;
-    time_vec(k) = (k - 1) * dt;
+    % Laufvariable erhöhen
     k = k + 1;
 end
 
+%% Darstellung und Anzeige
 figure()
 plot (x_t(1:k),y_t(1:k),'r')
 hold on
