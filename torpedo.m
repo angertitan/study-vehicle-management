@@ -1,3 +1,7 @@
+%% --- Reset --- %%
+clear all
+close all
+
 %% --- Globale Parameter --- %%
 % -- Umrechnungen -- %
 kn2mjs = 1852/3600; % [-] Umrechnungsfaktor Knoten -> m/s
