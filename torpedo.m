@@ -191,12 +191,58 @@ while( (sqrt((x_t(k) - x_z(k))^2 + (y_t(k) - y_z(k))^2)) >= 5) && ((k * dt) < t_
     k = k + 1;
 end
 
-%% Darstellung und Anzeige
-figure('Name', 'Seekarte')
-plot (x_t(1:k),y_t(1:k),'r')
+%% Darstellung Laufbahnen
+figure('Name', 'Seekarte', 'Position', [5 5 800 1000])
+plot (x_t(1:k),y_t(1:k),'rs', 'MarkerSize', 3)
 hold on
-plot (x_z(1:k),y_z(1:k),'b')
+plot (x_z(1:k),y_z(1:k),'bd', 'MarkerSize', 3)
 legend('Laufbahn Torpedo','Laufbahn Zerstörer')
 hold off
 grid on
 axis equal
+axis([-2000 4000 -3000 4000])
+
+
+%% Darstellung Laufbahn in "Echtzeit"
+plotRealTime(sim_length, x_t,y_t,x_z,y_z)
+
+% functions declaration
+function plotRealTime(sim_length, x_t, y_t, x_z, y_z)
+    xtData = zeros(1, sim_length);
+    ytData = zeros(1, sim_length);
+    xzData = zeros(1, sim_length);
+    yzData = zeros(1, sim_length);
+
+    xtData(1) = x_t(1);
+    ytData(1) = y_t(1);
+    xzData(1) = x_z(1);
+    yzData(1) = y_z(1);
+
+    figure('Name', 'Seekarte Echtzeit', 'Position', [1000 5 800 1000])
+    hold on
+    tplot = plot (xtData(1), ytData(1), 'rs', 'MarkerSize', 3);
+    zplot = plot (xzData(1), yzData(1), 'bd', 'MarkerSize', 3);
+    legend('Laufbahn Torpedo','Laufbahn Zerstörer')
+    grid on
+    axis equal
+    axis([-2000 4000 -3000 4000])
+    i = 1;
+    j = 2;
+    while (sqrt((x_z(i) - x_t(i))^2 + (y_t(i) - y_z(i))^2)>=5)
+        if mod(i, 5000) == 0
+            xtData(j) = x_t(i);
+            ytData(j) = y_t(i);
+            xzData(j) = x_z(i);
+            yzData(j) = y_z(i);
+
+            set(tplot, 'XData', xtData(1:i), 'YData', ytData(1:i))
+            set(zplot, 'XData', xzData(1:i), 'YData', yzData(1:i))
+            j = j + 1;
+        end
+        i = i + 1;
+        pause(0.00001)
+    end
+
+    hold off
+end
+
