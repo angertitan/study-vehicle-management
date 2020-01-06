@@ -25,7 +25,7 @@ J = (1/3) * m_rakete * (l_rakete)^2; % [kg*m^2] Trägheitsmoment
 x1_xw = base_vec;
 x2_pxw = base_vec;
 x3_phi = base_vec;
-x4_pphi = base_vec
+x4_pphi = base_vec;
 
 %% === Matrizen === %%
 
@@ -60,5 +60,5 @@ K_R = place(ss_a, ss_b, pole_vector);
 
 %% === Solving === %%
 while (k * dt) < t_max
-    i = i + 1
+    i = i + 1;
 end
