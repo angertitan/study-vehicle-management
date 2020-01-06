@@ -1,54 +1,54 @@
 % Aufgabenstellung: Flugregelungen von gesteuerten und ballistischen 
-% Flugkörpersystemen
-% (Maschflugkörper, ballistische Mittelstrecken- und
+% Flugkï¿½rpersystemen
+% (Maschflugkï¿½rper, ballistische Mittelstrecken- und
 % Interkontinentalwaffen)
 
 % Auf einer Raketenbasis sind ballistische
 % Mittelstreckenwaffen und Interkontinetalwaffen
-% stationiert. Derartige Flugkörper absolvieren mehrere Flugphasen,
+% stationiert. Derartige Flugkï¿½rper absolvieren mehrere Flugphasen,
 % die nachfolgend kurz beschrieben sind: 
 % 
 % 
-% 1.  Start- oder Boost-Phase – 3 bis 5 Minuten, Höhe am Ende zwischen 150 
+% 1.  Start- oder Boost-Phase ï¿½ 3 bis 5 Minuten, Hï¿½he am Ende zwischen 150 
 %     und 400 km je nach Flugbahn, Geschwindigkeit typisch 7 km/s 
 %     (25.000 km/h), bis zur 1. kosmischen Geschwindigkeit.
-% 2.  Mittlere Flugphase – etwa 25 Minuten – suborbitaler Flug in einer 
-%     elliptischen Umlaufbahn, deren Apogäum typisch eine Höhe von 1.200 km
-%     hat. Die große Halbachse dieser Ellipse hat eine Länge zwischen dem 
+% 2.  Mittlere Flugphase ï¿½ etwa 25 Minuten ï¿½ suborbitaler Flug in einer 
+%     elliptischen Umlaufbahn, deren Apogï¿½um typisch eine Hï¿½he von 1.200 km
+%     hat. Die groï¿½e Halbachse dieser Ellipse hat eine Lï¿½nge zwischen dem 
 %     vollen und dem halben Erdradius; die Projektion der Bahn auf die Erde
-%     ist nahe zum Großkreis, leicht verschoben wegen der Erdrotation 
-%     während des Flugs. In dieser Phase kann der Flugkörper mehrere 
-%     unabhängige Gefechtsköpfe und Eintrittshilfen wie metallbeschichtete 
-%     Folienballons ausstoßen, weiterhin Chaff oder ganze Täuschkörper.
-% 3.  Wiedereintrittsphase, beginnend in 100 km Höhe – 2 Minuten Dauer – 
+%     ist nahe zum Groï¿½kreis, leicht verschoben wegen der Erdrotation 
+%     wï¿½hrend des Flugs. In dieser Phase kann der Flugkï¿½rper mehrere 
+%     unabhï¿½ngige Gefechtskï¿½pfe und Eintrittshilfen wie metallbeschichtete 
+%     Folienballons ausstoï¿½en, weiterhin Chaff oder ganze Tï¿½uschkï¿½rper.
+% 3.  Wiedereintrittsphase, beginnend in 100 km Hï¿½he ï¿½ 2 Minuten Dauer ï¿½ 
 %     Einschlag mit einer Geschwindigkeit bis zu 4 km/s (14.400 km/h), 
-%     bei frühen ICBM weniger als 1 km/s (3.600 km/h).
+%     bei frï¿½hen ICBM weniger als 1 km/s (3.600 km/h).
 % 
-% Der Startvorgang soll durch ein MATLAB/SIMULINK-gestütztes Tool simuliert
+% Der Startvorgang soll durch ein MATLAB/SIMULINK-gestï¿½tztes Tool simuliert
 % werden, dazu soll auch ein Reglersystem entworfen werden, welches die
-% Raketenwaffe während der Startphase stabilisert. Die Stabilisierung
+% Raketenwaffe wï¿½hrend der Startphase stabilisert. Die Stabilisierung
 % erfolgt durch die Strahlruder im Abgasmassenstrom des Raketentriebwerkes.
 % Bevor das Triebwerk gestartet wird, soll die Rakete jedoch durch die 
-% mobile Waffenabschussplattform stabilisiert werden. Dazu sind zunächst  
+% mobile Waffenabschussplattform stabilisiert werden. Dazu sind zunï¿½chst  
 % Rakete und deren Plattform als inverses Pendel zu betrachten. Unmittelbar
-% nach dem Abheben der Rakete behält sie ihren Charakter eines inversen
+% nach dem Abheben der Rakete behï¿½lt sie ihren Charakter eines inversen
 % Pendels bei, wobei jedoch die Kraft zur Stabiliserung nicht mehr durch
 % die Plattform, sondern durch die Strahlruder im Abgasmassenstrom
 % hervorgerufen wird. 
 %
-% Zur Lösung sind die folgenden Teilaufgaben zu erledigen: 
+% Zur Lï¿½sung sind die folgenden Teilaufgaben zu erledigen: 
 % 
 % 1. Erstellen eines nichtlinearen Zustandsraummodells von Rakete und 
 %    Startplattform. 
-%    Das Zustandsraummodell soll die folgenden Größen beschreiben: 
+%    Das Zustandsraummodell soll die folgenden Grï¿½ï¿½en beschreiben: 
 %    x_w
 %    s*x_w 
 %    phi 
 %    s*phi
-%    die Modellierung soll für die x-Ebene erfolgen, die räumliche Regelung
+%    die Modellierung soll fï¿½r die x-Ebene erfolgen, die rï¿½umliche Regelung
 %    wird durch eine genau equivalente Regelung in der y-Ebene realisiert. 
 %    
-% 2. Abwandeln des Modells für die sich in der Startphase befindliche
+% 2. Abwandeln des Modells fï¿½r die sich in der Startphase befindliche
 %    Rakete, also ohne Startplattform. 
 %
 % 3. Linearisierung des Zustandraummodells und Erstellen einer
@@ -56,9 +56,9 @@
 %
 % 4. Bestimmen der Eigenwerte des Systems
 %
-% 5. Berechnen eines Zustandsreglers für die Stabiliserung der Waffe und
-%    zur Einhaltung der Startposition für einen möglichst senkrechten
-%    Start. Legen Sie sich dazu eigenständig die Pole des geschlossenen
+% 5. Berechnen eines Zustandsreglers fï¿½r die Stabiliserung der Waffe und
+%    zur Einhaltung der Startposition fï¿½r einen mï¿½glichst senkrechten
+%    Start. Legen Sie sich dazu eigenstï¿½ndig die Pole des geschlossenen
 %    Systems fest. 
 %  
 % 6. Bestimmen eines Vorfilters und eines I-Anteils zur
@@ -68,10 +68,10 @@
 %    Verfikation des Simulinkmodells durch eine eigene Simulation, durch
 %    eine auf dem Eulerprinzip basierende Simulation
 % 
-% 8. Untersuchung des Führungsverhaltens und des Störausregelungsverhaltens
+% 8. Untersuchung des Fï¿½hrungsverhaltens und des Stï¿½rausregelungsverhaltens
 %    Dazu sind dem System folgende Signale einzuspeisen: 
 %    a. Ein Sollwertsprung auf x_w ab 10. sec
-%    b. Eine Eingangsstörung am Prozess von 10 sec Dauer mit einer Kraft
+%    b. Eine Eingangsstï¿½rung am Prozess von 10 sec Dauer mit einer Kraft
 %    von 50 N, 150 N, 500 N ab der 100. sec
 %
 % 9. Test des nichtlinearen Gesamtsystems als MATLAB-Modell durch
@@ -129,4 +129,4 @@ ee
 
 ee_1 = eig(ss_A-ss_B*ss_k_reg)
 
-ss_k_reg2 = place(ss_A,ss_B,ee_1) 
+ss_k_reg2 = place(ss_A,ss_B,[-1 -1 -1 -2.2147]) 

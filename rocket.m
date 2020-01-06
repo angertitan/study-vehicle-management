@@ -36,29 +36,35 @@ b1 = (J + m_rakete * l_rakete^2) / ((J + m_rakete * l_rakete^2) * (m_wagen + m_r
 b2 = -(m_rakete * l_rakete) / ((J + m_rakete * l_rakete^2) * (m_wagen + m_rakete) - m_rakete^2 * l_rakete^2); % Formel F_ux phi**
 
 % == Systemmatrizen == %
-ss_a = [0 1 0 0; 0 0 a1 0; 0 0 0 1; 0 0 a2 0]; %Systemmatrix A: Systemdynamik
-ss_b = [0; b1; 0; b2]; %Systemmatrix B: Steuermatrix
-ss_c = [1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1]; %Systemmatrix C: alle Zustaende des Prozesses ausgeben 
-ss_c1 = [1 0 0 0];
+ss_A = [0 1 0 0; 0 0 a1 0; 0 0 0 1; 0 0 a2 0]; %Systemmatrix A: Systemdynamik
+ss_B = [0; b1; 0; b2]; %Systemmatrix B: Steuermatrix
+ss_C = [1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1]; %Systemmatrix C: alle Zustaende des Prozesses ausgeben 
+ss_C1 = [1 0 0 0];
 
-n = length(ss_b);
+n = length(ss_B);
 
-ss_d = zeros(n, 1); % Systemmatrix D: Durchgriff
-ss_d1 = 0;
+ss_D = zeros(n, 1); % Systemmatrix D: Durchgriff
+ss_D1 = 0;
 
 %% === Zustandsraum === %%
 
 % Wunschpole
-pole1 = 1;
-pole2 = -1i;
-pole3 = -1i;
+pole1 = -1;
+pole2 = -1.1;
+pole3 = -0.5;
+pole4 = -2.2147;
 
-pole_vector = [pole1 pole2 pole3];
+% Wunschpolvektor
+pole_vector = [pole1 pole2 pole3 pole4];
 
-% Reglerparameter
-K_R = place(ss_a, ss_b, pole_vector);
+% Reglerparameter durch Polvorgabe
+K_R = place(ss_A, ss_B, pole_vector);
+
+% Vorfilter
+P_VORFILTER = -(ss_C1 * ((ss_A - ss_B * K_R)^-1) * ss_B)^-1; % P-Anteil Vorfiler
+K_IS_VORFILTER = 100; % I-Anteil Vorfilter
 
 %% === Solving === %%
-while (k * dt) < t_max
-    i = i + 1;
-end
+% while (k * dt) < t_max
+%     i = i + 1;
+% end
